@@ -1,3 +1,3 @@
-var posts=["2025/03/27/后端开发之路/"];function toRandomPost(){
+var posts=["2025/04/10/Java线程简介/","2025/03/27/后端开发之路/"];function toRandomPost(){
     pjax.loadUrl('/'+posts[Math.floor(Math.random() * posts.length)]);
   };
