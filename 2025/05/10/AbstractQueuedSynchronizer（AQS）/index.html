@@ -1,0 +1,484 @@
+<!DOCTYPE html><html lang="en" data-theme="dark"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"><title>队列同步器AQS（AbstractQueuedSynchronizer） | LoungeXi</title><meta name="author" content="LoungeXi"><meta name="copyright" content="LoungeXi"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#18171d"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-touch-fullscreen" content="yes"><meta name="apple-mobile-web-app-title" content="队列同步器AQS（AbstractQueuedSynchronizer）"><meta name="application-name" content="队列同步器AQS（AbstractQueuedSynchronizer）"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="#18171d"><meta property="og:type" content="article"><meta property="og:title" content="队列同步器AQS（AbstractQueuedSynchronizer）"><meta property="og:url" content="http://example.com/2025/05/10/AbstractQueuedSynchronizer%EF%BC%88AQS%EF%BC%89/index.html"><meta property="og:site_name" content="LoungeXi"><meta property="og:description" content="深入学习队列同步器AQS。"><meta property="og:locale" content="en"><meta property="og:image" content="http://example.com/img/default_cover14.jpg"><meta property="article:author" content="LoungeXi"><meta property="article:tag"><meta name="twitter:card" content="summary"><meta name="twitter:image" content="http://example.com/img/default_cover14.jpg"><meta name="description" content="深入学习队列同步器AQS。"><link rel="shortcut icon" href="/img/injuried-svgrepo-com.ico"><link rel="canonical" href="http://example.com/2025/05/10/AbstractQueuedSynchronizer%EF%BC%88AQS%EF%BC%89/"><link rel="preconnect" href="//cdn.cbd.int"/><meta name="google-site-verification" content="xxx"/><meta name="baidu-site-verification" content="code-xxx"/><meta name="msvalidate.01" content="xxx"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.cbd.int/node-snackbar@0.1.16/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.cbd.int/@fancyapps/ui@5.0.28/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/anzhiyu-theme-static@1.0.0/swiper/swiper.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  linkPageTop: undefined,
+  peoplecanvas: undefined,
+  postHeadAiDescription: undefined,
+  diytitle: undefined,
+  LA51: undefined,
+  greetingBox: undefined,
+  twikooEnvId: '',
+  commentBarrageConfig:undefined,
+  music_page_default: "nav_music",
+  root: '/',
+  preloader: {"source":3},
+  friends_vue_info: undefined,
+  navMusic: false,
+  mainTone: undefined,
+  authorStatus: {"skills":null},
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简","rightMenuMsgToTraditionalChinese":"转为繁体","rightMenuMsgToSimplifiedChinese":"转为简体"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":330},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    simplehomepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: {"copy":true,"copyrightEbable":false,"limitCount":50,"languages":{"author":"Author: LoungeXi","link":"Link: ","source":"Source: LoungeXi","info":"Copyright is owned by the author. For commercial reprints, please contact the author for authorization. For non-commercial reprints, please indicate the source.","copySuccess":"Copy success, copy and reprint please mark the address of this article"}},
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"Traditional Chinese Activated Manually","cht_to_chs":"Simplified Chinese Activated Manually","day_to_night":"Dark Mode Activated Manually","night_to_day":"Light Mode Activated Manually","bgLight":"#425AEF","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.cbd.int/flickr-justified-gallery@2.1.2/dist/fjGallery.min.js',
+      css: 'https://cdn.cbd.int/flickr-justified-gallery@2.1.2/dist/fjGallery.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: false,
+  shortcutKey: undefined,
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  configTitle: 'LoungeXi',
+  title: '队列同步器AQS（AbstractQueuedSynchronizer）',
+  postAI: '',
+  pageFillDescription: '什么是队列同步器AQS？, AQS的接口与示例, 一个继承了AQS的独占锁示例, 队列同步器的实现分析, 同步队列, 独占式同步状态的获取与释放, 为什么明明只唤醒了首节点的后继节点为什么还存在获取同步状态失败的情况？, 共享式同步状态的获取与释放, 独占式超时获取同步状态什么是队列同步器队列同步器是用来构建锁或者其他同步组件的基础框架他使用一个成员变量表示同步状态通过内置的队列来完成资源获取线程的排队工作的主要使用方法是继承子类通过继承并实现它的抽象方法来管理同步状态在抽象方法的实现过程中免不了要对同步状态进行更改这时就需要使用提供的三个方法和来进行操作因为它们能够保证状态的改变是安全的继承的子类推荐被定义为自定义同步组件的静态内部类自身没有实现任何同步接口它仅仅是定义了若干同步状态获取和释放的方法来供自定义同步组件使用既可以支持独占式地获取获取同步状态又可以支持共享式地获取同步状态这样就可以方便地实现不同类型的同步组件和等是实现锁也可以是任意同步组件的关键在锁的实现中聚合同步器利用实现锁的语义可以这样理解两者之间的关系锁是面向使用者的它定义使用者与锁交互的接口比如可以允许两个线程并发访问隐藏了实现细节面向的是锁的实现者他简化了锁的实现方式屏蔽了同步状态管理线程的排队等待与唤醒等底层操作锁和很好地隔离了使用者和实现者所需关注的领域的接口与示例的设计是基于模板方法模式的使用者需要继承并重写指定的方法随后将组合在自定义的同步组件中并调用所提供的模板方法而这些模板方法会调用使用者重写的方法可重写的方法与描述方法名称描述独占式获取同步状态需要查询当前状态并判断同步状态是否符合预期然后再进行设置同步状态独占式释放同步状态等待获取同步状态的线程将有机会获取同步状态共享式获取同步状态如果返回大于或等于的值表示获取成功反之获取失败共享式释放同步状态当前同步器是否在独占模式下被线程占用一般该方法表示是否被当前线程占用实现自定义同步组件时将会调用提供的模板方法其中部分模板方法与描述如下提供的部分模板方法与描述方法名称描述独占式获取同步状态如果当前线程获取同步状态成功则由该方法返回否则将进入同步队列等待该方法将调用重写的方法与相同但是该方法响应中断当前线程未获取到同步状态时会进入同步队列中如果当前线程被中断则该方法会抛出并返回在的基础上增加了超时限制如果当前线程在超时时间内没有获取到同步状态那么返回反之则返回共享式地获取同步状态如果当前线程未获取到同步状态将会进入同步队列等待与与独占式获取的主要区别是在同一个时刻可以有多个线程获取到同步状态相同但可以响应中断在基础上增加了超时限制独占式释放同步状态该方法会在释放同步状态之后将同步队列中第一个节点包含的线程唤醒共享式释放同步状态获取等待在同步队列上的线程集合提供的模板方法基本分为类独占式获取与释放同步状态共享式获取与释放同步状态查询同步队列中的等待线程情况自定义同步组件将使用提供的模板方法来实现自己的同步语义一个继承了的独占锁示例独占锁就是在同一个时刻只能有一个线程获取到锁而其他获取锁的线程只能在同步队列中等待只有获取锁的线程释放了锁后继的线程才能获取锁静态内部类自定义同步器是否处于占用状态状态为则被占用尝试使用获取锁释放锁将状态设置为返回一个每个都包含一个队列仅需要将操作代理到上即可获取锁尝试非阻塞获取锁超时地获取锁可中断地获取锁释放锁获取等待通知组件查看锁状态查询是否存在任何线程正在等待获取资源上述独占锁是一个自定义同步组件它在同一时刻只允许一个线程占有锁中定义了一个静态内部类继承了并实现了独占式获取和释放同步状态在使用时并不会直接和内部同步器打交道而是调用提供的方法在的实现中以方法为例只需要在方法实现中调用同步器的模板方法即可当前线程调用该方法获取同步状态失败后会被加入同步队列中进行等待这样可以大大降低实现一个可靠自定义同步组件的门槛队列同步器的实现分析完成线程同步的方法主要包括同步队列独占式同步状态获取与释放共享式同步状态获取与释放以及独占式超时获取同步状态等同步器的核心数据结构与模板方法同步队列依赖内部的同步队列一个双向队列来完成同步状态的管理当前线程获取同步状态失败时同步器会将当前线程以及等待状态等信息构造成一个节点并将其加入同步队列同时阻塞当前线程当同步状态释放时会把队列头部的线程唤醒使其再次尝试获取同步状态同步队列中的节点用来保存获取获取同步状态失败的线程引用等待状态以及前驱和后继节点节点的属性类型与名称如下节点的属性类型与名称以及描述属性类型与名称描述等待状态包含如下状态值为由于在同步队列中等待的线程等待超时或被中断需要从同步队列中取消等待节点进入该状态将不会变化值为后继节点的线程处于等待状态而当前节点的线程如果释放了同步状态或者被取消将会通知后继节点使后继节点得以运行值为节点在等待队列中节点线程等待在上当其他线程对调用了方法后该节点将会从等待队列中转移到同步队列中加入到对同步状态的获取中值为表示下一次共享式同步状态将会无条件地传播下去值为初始状态前驱节点当节点加入同步队列时设置尾部添加后继节点等待队列中的后继节点如果当前节点是共享的那么这个字段将是一个常量也就是说节点类型独占和共享和等待队列中的后继节点共用一个字段获取同步状态的线程节点是构成同步队列的基础拥有首节点和尾节点没有成功获取同步状态的线程将会成为节点并加入该队列的尾部当一个线程成功地获取了同步状态或者锁其他线程将无法获取到同步状态转而被构造成为节点加入到同步队列中而加入同步队列的过程必须保证线程安全使用来设置尾节点只有设置成功后当前节点才能正式与之前的尾节点建立关联同步队列遵循首节点是获取同步状态成功的节点首节点的线程在释放同步状态时会唤醒后继节点而后继节点将会在获取同步状态成功时将自己设置为首节点由于只有一个线程能够获取到同步状态因此设置头节点的方法不需要使用来保证安全将首节点设置为原首节点的后继节点并断开原首节点的引用即可独占式同步状态的获取与释放通过调用同步器的方法可以获取同步状态该方法对中断不敏感也就是说线程获取同步状态失败后会进入同步队列后续对线程进行中断操作时线程不会从同步队列中移除同步器通过死循环来保证节点的正确添加在死循环中只有通过将节点设置为尾节点之后当前线程才能从该方法返回否则当前线程将不断尝试设置节点进入同步队列之后就进入到了一个自旋的过程每个节点或者说每个线程都在自省地观察当条件满足获取到同步状态就可以从这个自旋过程中退出否则依旧留在这个自旋过程中并会阻塞节点的线程线程在自旋过程中尝试获取同步状态但是只有前驱节点是头节点才有可能能尝试获取到同步状态原因有两个头节点是成功获取到同步状态的节点而头节点的线程释放了同步状态之后将唤醒它的后继节点后继节点的线程被唤醒后需要检查自己的前驱节点是不是头节点维护同步队列的原则非首节点线程前驱节点出队或者被中断而从等待状态返回随后检查自己的前驱是不是头节点如果是则尝试获取同步状态同步队列中各个节点在循环检查的过程中基本不通信而是简单地判断自己的前驱是不是头节点这样就使得节点的释放规则符合并且也便于对过早的通知的处理过早通知是指前驱节点不是头节点的线程由于中断而被唤醒为什么明明只唤醒了首节点的后继节点为什么还存在获取同步状态失败的情况后继节点被唤醒之后需要再次检查同步状态是否可以用这是因为在后继节点被唤醒的瞬间可能会有外部线程未进入同步队列的线程通过方法直接尝试获取锁如果外部线程成功获取锁同步状态被修改后继节点需要重新进入等待状态只有当外部线程没有获取锁时后继节点才能正在获取锁成为新的头节点共享式同步状态的获取与释放共享式获取与独占式获取的最大区别在于同一时刻能否有多个线程同时获取到同步状态以文件的读写为例如果一个程序在对文件进行读操作那么这一时刻对于该文件的写作操均被阻塞而读操作能够同时进行写操作要求对资源的独占式访问而读操作可以是共享式访问节点通过调用同步器的方法可以共享式地获取同步状态在方法中同步器调用方法尝试获取同步状态方法地返回值为类型若返回值表示获取同步状态成功直接返回若返回值表示获取失败进入同步队列等待当节点进入同步队列等待之后如果当前节点的前驱节点为头节点则会在中自旋获取同步状态如果返回值表示该次获取同步状态成功随即将当前节点设置为新的头节点并尝试连续唤醒队列中的后续节点为了支持多线程同时持有共享状态然后从自旋过程中退出与独占式获取一样共享式获取也需要释放同步状态通过调用方法释放同步状态释放同步状态之后会唤醒后继节点共享式同步状态必须确保安全被释放一般是通过循环和来保证因为释放同步状态的操作会同时来自多个线程独占式超时获取同步状态通过调用同步器的方法可以超时获取同步状态即在指定的时间段内获取同步状态如果获取到同步状态则返回否则返回超时获取同步状态的过程可以视作响应中断获取同步状态过程的增强版方法在支持响应中断的基础上增加了超时获取的特性针对超时获取主要需要计算出需要睡眠的时间间隔为了防止过早通知的计算公式为其中为当前唤醒时间为上次唤醒时间如果大于则表示超时时间未到需要继续睡眠反之表示已经超时当节点的前驱节点为头节点时尝试获取同步状态如果获取成功则从方法返回这个过程与独占式获取的过程类似但是在同步状态获取失败的处理上有所不同如果当前线程获取同步状态失败则判断是否超时小于或等于则表示已超时如果没有超时重新计算超时间隔然后使当前线程等待响应时间当到达设置的超时时间时该线程会从方法返回如果时将不会使该线程进行超时等待而是进入快速自旋过程原因在于非常短的超时时间无法做到十分精确如果这时再进行超时等待会让的超时从整体上表现得不精确因此在超时非常短的场景下同步器会进入无条件的快速自旋',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2025-05-17 00:00:00',
+  postMainColor: '',
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#18171d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f7f9fe')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+          const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+          const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+          const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+          if (t === undefined) {
+            if (isLightMode) activateLightMode()
+            else if (isDarkMode) activateDarkMode()
+            else if (isNotSpecified || hasNoSupport) {
+              const now = new Date()
+              const hour = now.getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            window.matchMedia('(prefers-color-scheme: dark)').addListener(e => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body data-type="anzhiyu"><div id="web_bg"></div><div id="an_music_bg"></div><div id="loading-box" onclick="document.getElementById(&quot;loading-box&quot;).classList.add(&quot;loaded&quot;)"><div class="loading-bg"><img class="loading-img nolazyload" alt="加载头像" src="/img/devil.jpg"/><div class="loading-image-dot"></div></div></div><script>const preloader = {
+  endLoading: () => {
+    document.getElementById('loading-box').classList.add("loaded");
+  },
+  initLoading: () => {
+    document.getElementById('loading-box').classList.remove("loaded")
+  }
+}
+window.addEventListener('load',()=> { preloader.endLoading() })
+setTimeout(function(){preloader.endLoading();},10000)
+
+if (true) {
+  document.addEventListener('pjax:send', () => { preloader.initLoading() })
+  document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+}</script><link rel="stylesheet" href="https://cdn.cbd.int/anzhiyu-theme-static@1.1.10/progress_bar/progress_bar.css"/><script async="async" src="https://cdn.cbd.int/pace-js@1.2.4/pace.min.js" data-pace-options="{ &quot;restartOnRequestAfter&quot;:false,&quot;eventLag&quot;:false}"></script><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><div id="nav-group"><span id="blog_name"><a id="site-name" href="/" accesskey="h"><div class="title">LoungeXi</div><i class="anzhiyufont anzhiyu-icon-house-chimney"></i></a></span><div class="mask-name-container"><div id="name-container"><a id="page-name" href="javascript:anzhiyu.scrollToDest(0, 500)">PAGE_NAME</a></div></div><div id="menus"></div><div id="nav-right"><div id="console"><div class="console-card-group-reward"><ul class="reward-all console-card"><li class="reward-item"><a href="https://npm.elemecdn.com/anzhiyu-blog@1.1.6/img/post/common/qrcode-weichat.png" target="_blank"><img class="post-qr-code-img" alt="微信" src="https://npm.elemecdn.com/anzhiyu-blog@1.1.6/img/post/common/qrcode-weichat.png"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://npm.elemecdn.com/anzhiyu-blog@1.1.6/img/post/common/qrcode-alipay.png" target="_blank"><img class="post-qr-code-img" alt="支付宝" src="https://npm.elemecdn.com/anzhiyu-blog@1.1.6/img/post/common/qrcode-alipay.png"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div><div class="console-card-group"><div class="console-card-group-left"></div><div class="console-card-group-right"><div class="console-card tags"><div class="card-content"><div class="author-content-item-tips">兴趣点</div><span class="author-content-item-title">寻找你感兴趣的领域</span></div></div><div class="console-card history"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-box-archiv"></i><span>文章</span></div><div class="card-archives"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-archive"></i><span>Archives</span></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/05/"><span class="card-archive-list-date">May 2025</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">2</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/04/"><span class="card-archive-list-date">April 2025</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">4</span><span>篇</span></div></a></li></ul></div><hr/></div></div></div><div class="button-group"><div class="console-btn-item"><a class="darkmode_switchbutton" title="显示模式切换" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-moon"></i></a></div><div class="console-btn-item" id="consoleHideAside" onclick="anzhiyu.hideAsideBtn()" title="边栏显示控制"><a class="asideSwitch"><i class="anzhiyufont anzhiyu-icon-arrows-left-right"></i></a></div></div><div class="console-mask" onclick="anzhiyu.hideConsole()" href="javascript:void(0);"></div></div><div class="nav-button" id="nav-totop"><a class="totopbtn" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i><span id="percent" onclick="anzhiyu.scrollToDest(0,500)">0</span></a></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);" title="切换"><i class="anzhiyufont anzhiyu-icon-bars"></i></a></div></div></div></nav><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original">原创</a><span class="article-meta tags"></span></div></div><h1 class="post-title" itemprop="name headline">队列同步器AQS（AbstractQueuedSynchronizer）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="anzhiyufont anzhiyu-icon-calendar-days post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" itemprop="dateCreated datePublished" datetime="2025-05-09T16:00:00.000Z" title="Created 2025-05-10 00:00:00">2025-05-10</time><span class="post-meta-separator"></span><i class="anzhiyufont anzhiyu-icon-history post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" itemprop="dateCreated datePublished" datetime="2025-05-16T16:00:00.000Z" title="Updated 2025-05-17 00:00:00">2025-05-17</time></span></div><div class="meta-secondline"><span class="post-meta-separator">       </span><span class="post-meta-position" title="作者IP属地为深圳"><i class="anzhiyufont anzhiyu-icon-location-dot"></i>深圳</span></div></div></div><section class="main-hero-waves-area waves-area"><svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto"><defs><path id="gentle-wave" d="M -160 44 c 30 0 58 -18 88 -18 s 58 18 88 18 s 58 -18 88 -18 s 58 18 88 18 v 44 h -352 Z"></path></defs><g class="parallax"><use href="#gentle-wave" x="48" y="0"></use><use href="#gentle-wave" x="48" y="3"></use><use href="#gentle-wave" x="48" y="5"></use><use href="#gentle-wave" x="48" y="7"></use></g></svg></section><div id="post-top-cover"><img class="nolazyload" id="post-top-bg" src="/img/default_cover14.jpg"></div></header><main id="blog-container"><div class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container" itemscope itemtype="http://example.com/2025/05/10/AbstractQueuedSynchronizer%EF%BC%88AQS%EF%BC%89/"><header><h1 id="CrawlerTitle" itemprop="name headline">队列同步器AQS（AbstractQueuedSynchronizer）</h1><span itemprop="author" itemscope itemtype="http://schema.org/Person">LoungeXi</span><time itemprop="dateCreated datePublished" datetime="2025-05-09T16:00:00.000Z" title="Created 2025-05-10 00:00:00">2025-05-10</time><time itemprop="dateCreated datePublished" datetime="2025-05-16T16:00:00.000Z" title="Updated 2025-05-17 00:00:00">2025-05-17</time></header><h2 id="什么是队列同步器AQS？"><a href="#什么是队列同步器AQS？" class="headerlink" title="什么是队列同步器AQS？"></a>什么是队列同步器AQS？</h2><p>​	队列同步器AbstractQueuedSynchronizer是用来构建锁或者其他同步组件的基础框架，他使用一个int成员变量表示同步状态，通过内置的FIFO队列来完成资源获取线程的排队工作。</p>
+<p>​	AQS的主要使用方法是继承，子类通过继承AQS并实现它的抽象方法来管理同步状态，在抽象方法的实现过程中免不了要对同步状态进行更改，这时就需要使用AQS提供的三个方法（getState()、setState()和compareAndSetState(int expect, int update)）来进行操作，因为它们能够保证状态的改变是安全的。继承AQS的子类推荐被定义为自定义同步组件的静态内部类。AQS自身没有实现任何同步接口，它仅仅是定义了若干同步状态获取和释放的方法来供自定义同步组件使用。AQS既可以支持独占式地获取获取同步状态，又可以支持共享式地获取同步状态，这样就可以方便地实现不同类型的同步组件（ReentrantLock、ReentrantReadWriteLock和CountDownLatch等）。</p>
+<p>AQS是实现锁（也可以是任意同步组件）的关键，在锁的实现中聚合同步器，利用AQS实现锁的语义。可以这样理解两者之间的关系：</p>
+<ul>
+<li><p>锁是面向使用者的，它定义使用者与锁交互的接口（比如可以允许两个线程并发访问），隐藏了实现细节；</p>
+</li>
+<li><p>AQS面向的是锁的实现者，他简化了锁的实现方式，屏蔽了同步状态管理、线程的排队、等待与唤醒等底层操作。</p>
+</li>
+</ul>
+<p>锁和AQS很好地隔离了使用者和实现者所需关注的领域。</p>
+<h2 id="AQS的接口与示例"><a href="#AQS的接口与示例" class="headerlink" title="AQS的接口与示例"></a>AQS的接口与示例</h2><p>​	AQS的设计是基于模板方法模式的，使用者需要继承AQS并重写指定的方法，随后将AQS组合在自定义的同步组件中，并调用AQS所提供的模板方法，而这些模板方法会调用使用者重写的方法。</p>
+<center><b>AQS可重写的方法与描述</b></center>
+
+<table>
+<thead>
+<tr>
+<th align="center">方法名称</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><nobr>protected boolean tryAcquire(int arg)</nobr></td>
+<td align="center">独占式获取同步状态，需要查询当前状态并判断同步状态是否符合预期，然后再进行CAS设置同步状态</td>
+</tr>
+<tr>
+<td align="center"><nobr>protected boolean tryRelease(int arg)</nobr></td>
+<td align="center">独占式释放同步状态，等待获取同步状态的线程将有机会获取同步状态</td>
+</tr>
+<tr>
+<td align="center"><nobr>protected int tryAcquireShared(int arg)</nobr></td>
+<td align="center">共享式获取同步状态，如果返回大于或等于0的值，表示获取成功，反之，获取失败</td>
+</tr>
+<tr>
+<td align="center"><nobr>protected boolean tryReleaseShared(int arg)</nobr></td>
+<td align="center">共享式释放同步状态</td>
+</tr>
+<tr>
+<td align="center"><nobr>protected boolean isHeldExclusively()</nobr></td>
+<td align="center">当前同步器是否在独占模式下被线程占用，一般该方法表示是否被当前线程占用</td>
+</tr>
+</tbody></table>
+<p>​	实现自定义同步组件时，将会调用AQS提供的模板方法，其中部分模板方法与描述如下：</p>
+<center><b>AQS提供的部分模板方法与描述</b></center>
+
+<table>
+<thead>
+<tr>
+<th align="center">方法名称</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><nobr>void acquire(int arg)</nobr></td>
+<td align="center">独占式获取同步状态，如果当前线程获取同步状态成功，则由该方法返回，否则，将进入同步队列等待，该方法将调用重写的tryAcquire(int arg)方法。</td>
+</tr>
+<tr>
+<td align="center"><nobr>void acquireInterruptibly(int arg)</nobr></td>
+<td align="center">与acquire(int arg)相同，但是该方法响应中断，当前线程未获取到同步状态时会进入同步队列中，如果当前线程被中断，则该方法会抛出InterruptedException并返回</td>
+</tr>
+<tr>
+<td align="center"><nobr>boolean tryAcquireNanos(int arg,long nacos)</nobr></td>
+<td align="center">在acquireInterruptibly(int arg)的基础上增加了超时限制，如果当前线程在超时时间内没有获取到同步状态，那么返回false，反之，则返回true</td>
+</tr>
+<tr>
+<td align="center"><nobr>void acquireShared(int arg)</nobr></td>
+<td align="center">共享式地获取同步状态，如果当前线程未获取到同步状态，将会进入同步队列等待，与与独占式获取的主要区别是在同一个时刻可以有多个线程获取到同步状态</td>
+</tr>
+<tr>
+<td align="center"><nobr>void acquireSharedInterreptibly(int arg)</nobr></td>
+<td align="center">void acquireShared(int arg)相同，但可以响应中断</td>
+</tr>
+<tr>
+<td align="center"><nobr>boolean tryAcquireSharedNanos(int arg, long nanos)</nobr></td>
+<td align="center">在acquireSharedInterreptibly(int arg)基础上增加了超时限制</td>
+</tr>
+<tr>
+<td align="center"><nobr>boolean release(int arg)</nobr></td>
+<td align="center">独占式释放同步状态，该方法会在释放同步状态之后，将同步队列中第一个节点包含的线程唤醒</td>
+</tr>
+<tr>
+<td align="center"><nobr>boolean releaseShared(int arg)</nobr></td>
+<td align="center">共享式释放同步状态</td>
+</tr>
+<tr>
+<td align="center"><nobr>Collection&lt;Thread&gt; getQueuedThreads()</nobr></td>
+<td align="center">获取等待在同步队列上的线程集合</td>
+</tr>
+</tbody></table>
+<p>​	AQS提供的模板方法基本分为3类：</p>
+<ul>
+<li>独占式获取与释放同步状态</li>
+<li>共享式获取与释放同步状态</li>
+<li>查询同步队列中的等待线程情况</li>
+</ul>
+<p>自定义同步组件将使用AQS提供的模板方法来实现自己的同步语义。</p>
+<h2 id="一个继承了AQS的独占锁示例"><a href="#一个继承了AQS的独占锁示例" class="headerlink" title="一个继承了AQS的独占锁示例"></a>一个继承了AQS的独占锁示例</h2><p>​	独占锁就是在同一个时刻只能有一个线程获取到锁，而其他获取锁的线程只能在同步队列中等待，只有获取锁的线程释放了锁，后继的线程才能获取锁。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MutexLock</span> <span class="keyword">implements</span> <span class="title class_">Lock</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//静态内部类，自定义同步器</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Sync</span> <span class="keyword">extends</span> <span class="title class_">AbstractQueuedSynchronizer</span> &#123;</span><br><span class="line">        <span class="comment">// 是否处于占用状态</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">isHeldExclusively</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="comment">// 状态为1则被占用</span></span><br><span class="line">            <span class="keyword">return</span> getState() == <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">tryAcquire</span><span class="params">(<span class="type">int</span> arg)</span> &#123;</span><br><span class="line">            <span class="comment">// 尝试使用CAS获取锁</span></span><br><span class="line">            <span class="keyword">if</span> (compareAndSetState(<span class="number">0</span>, <span class="number">1</span>)) &#123;</span><br><span class="line">                setExclusiveOwnerThread(Thread.currentThread());</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//释放锁，将状态设置为0</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryRelease</span><span class="params">(<span class="type">int</span> arg)</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (getState() == <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalMonitorStateException</span>();</span><br><span class="line">            &#125;</span><br><span class="line">            setExclusiveOwnerThread(<span class="literal">null</span>);</span><br><span class="line">            setState(<span class="number">0</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 返回一个Condition，每个condition都包含一个condition队列</span></span><br><span class="line">        Condition <span class="title function_">newCondition</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ConditionObject</span>();</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 仅需要将操作代理到Sync上即可</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">Sync</span> <span class="variable">sync</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Sync</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取锁</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">lock</span><span class="params">()</span> &#123;</span><br><span class="line">        sync.acquire(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 尝试非阻塞获取锁</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">tryLock</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> sync.tryAcquire(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 超时地获取锁</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">tryLock</span><span class="params">(<span class="type">long</span> timeout, TimeUnit unit)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="keyword">return</span> sync.tryAcquireNanos(<span class="number">1</span>, unit.toNanos(timeout));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 可中断地获取锁</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">lockInterruptibly</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        sync.acquireInterruptibly(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 释放锁</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">unlock</span><span class="params">()</span> &#123;</span><br><span class="line">        sync.release(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取等待通知组件</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Condition <span class="title function_">newCondition</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> sync.newCondition();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 查看锁状态</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isLocked</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> sync.isHeldExclusively();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 查询是否存在任何线程正在等待获取资源</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">hasQueuedThreads</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> sync.hasQueuedThreads();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Have a try.</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">MutexLock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MutexLock</span>();</span><br><span class="line">        lock.lock();</span><br><span class="line">        System.out.println(<span class="string">&quot;Hi! I am a mutex lock!&quot;</span>);</span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​	上述独占锁MutexLock是一个自定义同步组件，它在同一时刻只允许一个线程占有锁。MuteXLock中定义了一个静态内部类Sync，Sync继承了AQS并实现了独占式获取和释放同步状态。在使用MutexLock时并不会直接和内部同步器打交道，而是调用MutexLock提供的方法。在MutexLock的实现中，以lock()方法为例，只需要在方法实现中调用同步器的模板方法acquire(int arg)即可，当前线程调用该方法获取同步状态失败后会被加入同步队列中进行等待，这样可以大大降低实现一个可靠自定义同步组件的门槛。</p>
+<h2 id="队列同步器的实现分析"><a href="#队列同步器的实现分析" class="headerlink" title="队列同步器的实现分析"></a>队列同步器的实现分析</h2><p>​	AQS完成线程同步的方法主要包括同步队列，独占式同步状态获取与释放、共享式同步状态获取与释放以及独占式超时获取同步状态等同步器的核心数据结构与模板方法。</p>
+<h3 id="同步队列"><a href="#同步队列" class="headerlink" title="同步队列"></a>同步队列</h3><p>​	AQS依赖内部的同步队列（一个FIFO双向队列）来完成同步状态的管理，当前线程获取同步状态失败时，同步器会将当前线程以及等待状态等信息构造成一个节点（Node）并将其加入同步队列，同时阻塞当前线程，当同步状态释放时，会把队列头部的线程唤醒，使其再次尝试获取同步状态。</p>
+<p>​	同步队列中的节点用来保存获取获取同步状态失败的线程引用、等待状态以及前驱和后继节点，节点的属性类型与名称如下：</p>
+<center><b>节点的属性类型与名称以及描述</b></center>
+
+<table>
+<thead>
+<tr>
+<th align="center">属性类型与名称</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><nobr>int waitStatus</nobr></td>
+<td align="left">等待状态，包含如下状态：<br>①CANCELLED，值为1，由于在同步队列中等待的线程等待超时或被中断，需要从同步队列中取消等待，节点进入该状态将不会变化<br>②SIGNAL，值为-1，后继节点的线程处于等待状态，而当前节点的线程如果释放了同步状态或者被取消，将会通知后继节点，使后继节点得以运行<br>③CONDITION，值为-2，节点在等待队列中，节点线程等待在Condition上，当其他线程对Condition调用了signal()方法后，该节点将会从等待队列中转移到同步队列中，加入到对同步状态的获取中<br>④PROPAGATE，值为-3，表示下一次共享式同步状态将会无条件地传播下去<br>⑤INITIAL，值为0，初始状态</td>
+</tr>
+<tr>
+<td align="center"><nobr>Node prev</nobr></td>
+<td align="left">前驱节点，当节点加入同步队列时设置（尾部添加）</td>
+</tr>
+<tr>
+<td align="center"><nobr>Node next</nobr></td>
+<td align="left">后继节点</td>
+</tr>
+<tr>
+<td align="center"><nobr>Node nextWaiter</nobr></td>
+<td align="left">等待队列中的后继节点。如果当前节点是共享的，那么这个字段将是一个SHARED常量，也就是说节点类型（独占和共享）和等待队列中的后继节点共用一个字段</td>
+</tr>
+<tr>
+<td align="center"><nobr>Thread thread</nobr></td>
+<td align="left">获取同步状态的线程</td>
+</tr>
+</tbody></table>
+<p>​	节点是构成同步队列的基础，AQS拥有首节点（head）和尾节点（tail），没有成功获取同步状态的线程将会成为节点并加入该队列的尾部。当一个线程成功地获取了同步状态（或者锁），其他线程将无法获取到同步状态，转而被构造成为节点加入到同步队列中，而加入同步队列的过程必须保证线程安全，AQS使用CAS来设置尾节点，只有设置成功后，当前节点才能正式与之前的尾节点建立关联。</p>
+<p>​	同步队列遵循FIFO，首节点是获取同步状态成功的节点，首节点的线程在释放同步状态时，会唤醒后继节点，而后继节点将会在获取同步状态成功时将自己设置为首节点。由于只有一个线程能够获取到同步状态，因此设置头节点的方法不需要使用CAS来保证安全，将首节点设置为原首节点的后继节点并断开原首节点的next引用即可。</p>
+<h3 id="独占式同步状态的获取与释放"><a href="#独占式同步状态的获取与释放" class="headerlink" title="独占式同步状态的获取与释放"></a>独占式同步状态的获取与释放</h3><p>​	通过调用同步器的aqire(int arg)方法可以获取同步状态，该方法对中断不敏感，也就是说，线程获取同步状态失败后会进入同步队列，后续对线程进行中断操作时，线程不会从同步队列中移除。同步器通过“死循环”来保证节点的正确添加，在“死循环”中只有通过CAS将节点设置为尾节点之后，当前线程才能从该方法返回，否则，当前线程将不断尝试设置。</p>
+<p>​	节点进入同步队列之后，就进入到了一个自旋的过程，每个节点（或者说每个线程）都在自省地观察，当条件满足，获取到同步状态，就可以从这个自旋过程中退出，否则依旧留在这个自旋过程中（并会阻塞节点的线程）。线程在自旋过程中尝试获取同步状态，但是只有前驱节点是头节点才有可能能尝试获取到同步状态，原因有两个：</p>
+<ul>
+<li>头节点是成功获取到同步状态的节点，而头节点的线程释放了同步状态之后，将唤醒它的后继节点，后继节点的线程被唤醒后需要检查自己的前驱节点是不是头节点。</li>
+<li>维护同步队列的FIFO原则。非首节点线程前驱节点出队或者被中断而从等待状态返回，随后检查自己的前驱是不是头节点，如果是则尝试获取同步状态。同步队列中各个节点在循环检查的过程中基本不通信，而是简单地判断自己的前驱是不是头节点，这样就使得节点的释放规则符合FIFO，并且也便于对过早的通知的处理（过早通知是指前驱节点不是头节点的线程由于中断而被唤醒）。</li>
+</ul>
+<h4 id="为什么明明只唤醒了首节点的后继节点，为什么还存在获取同步状态失败的情况？"><a href="#为什么明明只唤醒了首节点的后继节点，为什么还存在获取同步状态失败的情况？" class="headerlink" title="为什么明明只唤醒了首节点的后继节点，为什么还存在获取同步状态失败的情况？"></a>为什么明明只唤醒了首节点的后继节点，为什么还存在获取同步状态失败的情况？</h4><p>​	后继节点被唤醒之后，需要再次检查同步状态是否可以用，这是因为：</p>
+<ul>
+<li>在后继节点被唤醒的瞬间，可能会有<strong>外部线程</strong>（未进入同步队列的线程）通过tryAcquire()方法直接尝试获取锁。</li>
+<li>如果外部线程成功获取锁，同步状态被修改，后继节点需要重新进入等待状态。</li>
+<li>只有当外部线程没有获取锁时，后继节点才能正在获取锁，成为新的头节点。</li>
+</ul>
+<h3 id="共享式同步状态的获取与释放"><a href="#共享式同步状态的获取与释放" class="headerlink" title="共享式同步状态的获取与释放"></a>共享式同步状态的获取与释放</h3><p>​	共享式获取与独占式获取的最大区别在于同一时刻能否有多个线程同时获取到同步状态。以文件的读写为例，如果一个程序在对文件进行读操作，那么这一时刻对于该文件的写作操均被阻塞，而读操作能够同时进行。写操作要求对资源的独占式访问，而读操作可以是共享式访问。</p>
+<p>​	节点通过调用同步器的acquireShared(int arg)方法可以共享式地获取同步状态，在acquireShared(int arg)方法中，同步器调用tryAcquireShared(int arg)方法尝试获取同步状态。tryAcquireShared(int arg)方法地返回值为int类型，若返回值&gt;&#x3D;0，表示获取同步状态成功，直接返回，若返回值&lt;0，表示获取失败，进入同步队列等待。</p>
+<p>​	当节点进入同步队列等待之后，如果当前节点的前驱节点为头节点，则会在doAcquireShared(int arg)中自旋获取同步状态，如果返回值&gt;&#x3D;0，表示该次获取同步状态成功，随即将当前节点设置为新的头节点并尝试<strong>连续唤醒队列中的后续节点（为了支持多线程同时持有共享状态）</strong>，然后从自旋过程中退出。</p>
+<p>​	与独占式获取一样，共享式获取也需要释放同步状态，通过调用releaseShared(int arg)方法释放同步状态，释放同步状态之后会<strong>唤醒后继节点</strong>。共享式同步状态必须确保安全被释放，一般是通过循环和CAS来保证，因为释放同步状态的操作会同时来自多个线程。</p>
+<h3 id="独占式超时获取同步状态"><a href="#独占式超时获取同步状态" class="headerlink" title="独占式超时获取同步状态"></a>独占式超时获取同步状态</h3><p>​	通过调用同步器的doAcquireNanos(int arg, long nanosTimeout)方法可以超时获取同步状态，即在指定的时间段内获取同步状态，如果获取到同步状态则返回true，否则返回false。</p>
+<p>​	超时获取同步状态的过程可以视作响应中断获取同步状态过程的“增强版”，doAcquireNanos(int arg, long nanosTimeout)方法在支持响应中断的基础上增加了超时获取的特性。针对超时获取，主要需要计算出需要睡眠的时间间隔nanosTimeout。为了防止过早通知，nanosTimeout的计算公式为：nanosTimeout -&#x3D; now - lastTime，其中now为当前唤醒时间，lastTime为上次唤醒时间，如果nanosTimeout大于0则表示超时时间未到，需要继续睡眠，反之，表示已经超时。</p>
+<p>​	当节点的前驱节点为头节点时尝试获取同步状态，如果获取成功则从方法返回，这个过程与独占式获取的过程类似，但是在同步状态获取失败的处理上有所不同。如果当前线程获取同步状态失败，则判断是否超时（nanosTimeout小于或等于0则表示已超时），如果没有超时，重新计算超时间隔nanosTimeout，然后使当前线程等待响应时间（当到达设置的超时时间时，该线程会从LockSupport.parkNanos(Object blocker, long nanos)方法返回）。如果nanosTimeout&lt;&#x3D;spinForTimeoutThreshold(1000ms)时，将不会使该线程进行超时等待，而是进入快速自旋过程。原因在于非常短的超时时间无法做到十分精确，如果这时再进行超时等待，会让nanosTimeout的超时从整体上表现得不精确，因此在超时非常短的场景下，同步器会进入无条件的快速自旋。</p>
+</article><div class="post-copyright"><div class="copyright-cc-box"><i class="anzhiyufont anzhiyu-icon-copyright"></i></div><div class="post-copyright__author_box"><a class="post-copyright__author_img" href="/" title="头像"><img class="post-copyright__author_img_back" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/devil.jpg" title="头像" alt="头像"><img class="post-copyright__author_img_front" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/devil.jpg" title="头像" alt="头像"></a><div class="post-copyright__author_name">LoungeXi</div><div class="post-copyright__author_desc"></div></div><div class="post-copyright__post__info"><a class="post-copyright__original" title="该文章为原创文章，注意版权协议" href="http://example.com/2025/05/10/AbstractQueuedSynchronizer%EF%BC%88AQS%EF%BC%89/">原创</a><a class="post-copyright-title"><span onclick="rm.copyPageUrl('http://example.com/2025/05/10/AbstractQueuedSynchronizer%EF%BC%88AQS%EF%BC%89/')">队列同步器AQS（AbstractQueuedSynchronizer）</span></a></div><div class="post-copyright__notice"><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__box"><div class="post-meta__box__tag-list"></div></div></div><div class="post_share"><div class="social-share" data-image="/img/default_cover14.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.cbd.int/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"/><script src="https://cdn.cbd.int/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer="defer"></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-full"><a href="/2025/05/02/Model%20Context%20Protocol%EF%BC%88MCP%EF%BC%89/"><img class="prev-cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/default_cover37.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">MCP协议（Model Context Protocol）</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="author-info__sayhi" id="author-info__sayhi" onclick="anzhiyu.changeSayHelloText()"></div><div class="author-info-avatar"><img class="avatar-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/devil.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-status"><img class="g-status" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/green.png" alt="status"/></div></div><div class="author-info__description"><div style="line-height:1.38;margin:0.6rem 0;text-align:justify;color:rgba(255, 255, 255, 0.8);">幸会</div><div style="line-height:1.38;margin:0.6rem 0;text-align:justify;color:rgba(255, 255, 255, 0.8);">一个初级后端开发者</div><div style="line-height:1.38;margin:0.6rem 0;text-align:justify;color:rgba(255, 255, 255, 0.8);">微信:L0un9eXi</div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-bars"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E9%98%9F%E5%88%97%E5%90%8C%E6%AD%A5%E5%99%A8AQS%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">什么是队列同步器AQS？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AQS%E7%9A%84%E6%8E%A5%E5%8F%A3%E4%B8%8E%E7%A4%BA%E4%BE%8B"><span class="toc-number">2.</span> <span class="toc-text">AQS的接口与示例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%B8%AA%E7%BB%A7%E6%89%BF%E4%BA%86AQS%E7%9A%84%E7%8B%AC%E5%8D%A0%E9%94%81%E7%A4%BA%E4%BE%8B"><span class="toc-number">3.</span> <span class="toc-text">一个继承了AQS的独占锁示例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%98%9F%E5%88%97%E5%90%8C%E6%AD%A5%E5%99%A8%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%88%86%E6%9E%90"><span class="toc-number">4.</span> <span class="toc-text">队列同步器的实现分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8C%E6%AD%A5%E9%98%9F%E5%88%97"><span class="toc-number">4.1.</span> <span class="toc-text">同步队列</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8B%AC%E5%8D%A0%E5%BC%8F%E5%90%8C%E6%AD%A5%E7%8A%B6%E6%80%81%E7%9A%84%E8%8E%B7%E5%8F%96%E4%B8%8E%E9%87%8A%E6%94%BE"><span class="toc-number">4.2.</span> <span class="toc-text">独占式同步状态的获取与释放</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%8E%E6%98%8E%E5%8F%AA%E5%94%A4%E9%86%92%E4%BA%86%E9%A6%96%E8%8A%82%E7%82%B9%E7%9A%84%E5%90%8E%E7%BB%A7%E8%8A%82%E7%82%B9%EF%BC%8C%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%98%E5%AD%98%E5%9C%A8%E8%8E%B7%E5%8F%96%E5%90%8C%E6%AD%A5%E7%8A%B6%E6%80%81%E5%A4%B1%E8%B4%A5%E7%9A%84%E6%83%85%E5%86%B5%EF%BC%9F"><span class="toc-number">4.2.1.</span> <span class="toc-text">为什么明明只唤醒了首节点的后继节点，为什么还存在获取同步状态失败的情况？</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B1%E4%BA%AB%E5%BC%8F%E5%90%8C%E6%AD%A5%E7%8A%B6%E6%80%81%E7%9A%84%E8%8E%B7%E5%8F%96%E4%B8%8E%E9%87%8A%E6%94%BE"><span class="toc-number">4.3.</span> <span class="toc-text">共享式同步状态的获取与释放</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8B%AC%E5%8D%A0%E5%BC%8F%E8%B6%85%E6%97%B6%E8%8E%B7%E5%8F%96%E5%90%8C%E6%AD%A5%E7%8A%B6%E6%80%81"><span class="toc-number">4.4.</span> <span class="toc-text">独占式超时获取同步状态</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2025/05/10/AbstractQueuedSynchronizer%EF%BC%88AQS%EF%BC%89/" title="队列同步器AQS（AbstractQueuedSynchronizer）"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/default_cover14.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="队列同步器AQS（AbstractQueuedSynchronizer）"/></a><div class="content"><a class="title" href="/2025/05/10/AbstractQueuedSynchronizer%EF%BC%88AQS%EF%BC%89/" title="队列同步器AQS（AbstractQueuedSynchronizer）">队列同步器AQS（AbstractQueuedSynchronizer）</a><time datetime="2025-05-09T16:00:00.000Z" title="Created 2025-05-10 00:00:00">2025-05-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/05/02/Model%20Context%20Protocol%EF%BC%88MCP%EF%BC%89/" title="MCP协议（Model Context Protocol）"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/default_cover37.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MCP协议（Model Context Protocol）"/></a><div class="content"><a class="title" href="/2025/05/02/Model%20Context%20Protocol%EF%BC%88MCP%EF%BC%89/" title="MCP协议（Model Context Protocol）">MCP协议（Model Context Protocol）</a><time datetime="2025-05-01T16:00:00.000Z" title="Created 2025-05-02 00:00:00">2025-05-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/04/22/%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E7%9A%84%E7%B1%BB%E7%9A%84%E5%BB%B6%E8%BF%9F%E5%88%9D%E5%A7%8B%E5%8C%96/" title="线程安全的类的延迟初始化"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/default_cover4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="线程安全的类的延迟初始化"/></a><div class="content"><a class="title" href="/2025/04/22/%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E7%9A%84%E7%B1%BB%E7%9A%84%E5%BB%B6%E8%BF%9F%E5%88%9D%E5%A7%8B%E5%8C%96/" title="线程安全的类的延迟初始化">线程安全的类的延迟初始化</a><time datetime="2025-04-21T16:00:00.000Z" title="Created 2025-04-22 00:00:00">2025-04-22</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/04/20/%E5%85%B3%E4%BA%8EVolatile%E4%B8%80%E4%BA%9B%E7%9F%A5%E8%AF%86%E7%9A%84%E5%AD%A6%E4%B9%A0/" title="关于Volatile"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/default_cover38.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于Volatile"/></a><div class="content"><a class="title" href="/2025/04/20/%E5%85%B3%E4%BA%8EVolatile%E4%B8%80%E4%BA%9B%E7%9F%A5%E8%AF%86%E7%9A%84%E5%AD%A6%E4%B9%A0/" title="关于Volatile">关于Volatile</a><time datetime="2025-04-19T16:00:00.000Z" title="Created 2025-04-20 00:00:00">2025-04-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/04/17/%E5%85%B3%E4%BA%8ESynchronized%E7%9A%84%E5%AD%A6%E4%B9%A0/" title="关于Synchronized"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/default_cover21.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于Synchronized"/></a><div class="content"><a class="title" href="/2025/04/17/%E5%85%B3%E4%BA%8ESynchronized%E7%9A%84%E5%AD%A6%E4%B9%A0/" title="关于Synchronized">关于Synchronized</a><time datetime="2025-04-16T16:00:00.000Z" title="Created 2025-04-17 00:00:00">2025-04-17</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"></div></footer></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="sidebar-site-data site-data is-center"><a href="/archives/" title="archive"><div class="headline">Articles</div><div class="length-num">6</div></a><a href="/tags/" title="tag"><div class="headline">Tags</div><div class="length-num">0</div></a><a href="/categories/" title="category"><div class="headline">Categories</div><div class="length-num">0</div></a></div><span class="sidebar-menu-item-title">Function</span><div class="sidebar-menu-item"><a class="darkmode_switchbutton menu-child" href="javascript:void(0);" title="Display Mode"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i><span>Display Mode</span></a></div><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">网页</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https://blog.anheyu.com/" title="博客"><img class="back-menu-item-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/favicon.ico" alt="博客"/><span class="back-menu-item-text">博客</span></a></div></div><div class="back-menu-list-group"><div class="back-menu-list-title">项目</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https://image.anheyu.com/" title="安知鱼图床"><img class="back-menu-item-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://image.anheyu.com/favicon.ico" alt="安知鱼图床"/><span class="back-menu-item-text">安知鱼图床</span></a></div></div></div><span class="sidebar-menu-item-title">标签</span></div></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="anzhiyufont anzhiyu-icon-book-open"></i></button><button id="translateLink" type="button" title="Switch Between Traditional Chinese And Simplified Chinese">繁</button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Setting"><i class="anzhiyufont anzhiyu-icon-gear"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="anzhiyufont anzhiyu-icon-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i></button></div></div><div id="rightMenu"><div class="rightMenu-group rightMenu-small"><div class="rightMenu-item" id="menu-backward"><i class="anzhiyufont anzhiyu-icon-arrow-left"></i></div><div class="rightMenu-item" id="menu-forward"><i class="anzhiyufont anzhiyu-icon-arrow-right"></i></div><div class="rightMenu-item" id="menu-refresh"><i class="anzhiyufont anzhiyu-icon-arrow-rotate-right" style="font-size: 1rem;"></i></div><div class="rightMenu-item" id="menu-top"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i></div></div><div class="rightMenu-group rightMenu-line rightMenuPlugin"><div class="rightMenu-item" id="menu-copytext"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制选中文本</span></div><div class="rightMenu-item" id="menu-pastetext"><i class="anzhiyufont anzhiyu-icon-paste"></i><span>粘贴文本</span></div><a class="rightMenu-item" id="menu-commenttext"><i class="anzhiyufont anzhiyu-icon-comment-medical"></i><span>引用到评论</span></a><div class="rightMenu-item" id="menu-newwindow"><i class="anzhiyufont anzhiyu-icon-window-restore"></i><span>新窗口打开</span></div><div class="rightMenu-item" id="menu-copylink"><i class="anzhiyufont anzhiyu-icon-link"></i><span>复制链接地址</span></div><div class="rightMenu-item" id="menu-copyimg"><i class="anzhiyufont anzhiyu-icon-images"></i><span>复制此图片</span></div><div class="rightMenu-item" id="menu-downloadimg"><i class="anzhiyufont anzhiyu-icon-download"></i><span>下载此图片</span></div><div class="rightMenu-item" id="menu-newwindowimg"><i class="anzhiyufont anzhiyu-icon-window-restore"></i><span>新窗口打开图片</span></div><div class="rightMenu-item" id="menu-search"><i class="anzhiyufont anzhiyu-icon-magnifying-glass"></i><span>站内搜索</span></div><div class="rightMenu-item" id="menu-searchBaidu"><i class="anzhiyufont anzhiyu-icon-magnifying-glass"></i><span>百度搜索</span></div><div class="rightMenu-item" id="menu-music-toggle"><i class="anzhiyufont anzhiyu-icon-play"></i><span>播放音乐</span></div><div class="rightMenu-item" id="menu-music-back"><i class="anzhiyufont anzhiyu-icon-backward"></i><span>切换到上一首</span></div><div class="rightMenu-item" id="menu-music-forward"><i class="anzhiyufont anzhiyu-icon-forward"></i><span>切换到下一首</span></div><div class="rightMenu-item" id="menu-music-playlist" onclick="window.open(&quot;https://y.qq.com/n/ryqq/playlist/8802438608&quot;, &quot;_blank&quot;);" style="display: none;"><i class="anzhiyufont anzhiyu-icon-radio"></i><span>查看所有歌曲</span></div><div class="rightMenu-item" id="menu-music-copyMusicName"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制歌名</span></div></div><div class="rightMenu-group rightMenu-line rightMenuOther"><a class="rightMenu-item menu-link" id="menu-randomPost"><i class="anzhiyufont anzhiyu-icon-shuffle"></i><span>随便逛逛</span></a><a class="rightMenu-item menu-link" href="/categories/"><i class="anzhiyufont anzhiyu-icon-cube"></i><span>博客分类</span></a><a class="rightMenu-item menu-link" href="/tags/"><i class="anzhiyufont anzhiyu-icon-tags"></i><span>文章标签</span></a></div><div class="rightMenu-group rightMenu-line rightMenuOther"><a class="rightMenu-item" id="menu-copy" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制地址</span></a><a class="rightMenu-item" id="menu-commentBarrage" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-message"></i><span class="menu-commentBarrage-text">关闭热评</span></a><a class="rightMenu-item" id="menu-darkmode" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i><span class="menu-darkmode-text">深色模式</span></a><a class="rightMenu-item" id="menu-translate" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-language"></i><span>轉為繁體</span></a></div></div><div id="rightmenu-mask"></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.cbd.int/@fancyapps/ui@5.0.28/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.cbd.int/instant.page@5.2.0/instantpage.js" type="module"></script><script src="https://cdn.cbd.int/vanilla-lazyload@17.8.5/dist/lazyload.iife.min.js"></script><script src="https://cdn.cbd.int/node-snackbar@0.1.16/dist/snackbar.min.js"></script><canvas id="universe"></canvas><script async src="https://npm.elemecdn.com/anzhiyu-theme-static@1.0.0/dark/dark.js"></script><script>// 消除控制台打印
+var HoldLog = console.log;
+console.log = function () {};
+let now1 = new Date();
+queueMicrotask(() => {
+  const Log = function () {
+    HoldLog.apply(console, arguments);
+  }; //在恢复前输出日志
+  const grt = new Date("04/07/2023 00:00:00"); //此处修改你的建站时间或者网站上线时间
+  now1.setTime(now1.getTime() + 250);
+  const days = (now1 - grt) / 1000 / 60 / 60 / 24;
+  const dnum = Math.floor(days);
+  const ascll = [
+    `欢迎使用安知鱼!`,
+    `生活明朗, 万物可爱`,
+    `
+        
+       █████╗ ███╗   ██╗███████╗██╗  ██╗██╗██╗   ██╗██╗   ██╗
+      ██╔══██╗████╗  ██║╚══███╔╝██║  ██║██║╚██╗ ██╔╝██║   ██║
+      ███████║██╔██╗ ██║  ███╔╝ ███████║██║ ╚████╔╝ ██║   ██║
+      ██╔══██║██║╚██╗██║ ███╔╝  ██╔══██║██║  ╚██╔╝  ██║   ██║
+      ██║  ██║██║ ╚████║███████╗██║  ██║██║   ██║   ╚██████╔╝
+      ╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝╚═╝   ╚═╝    ╚═════╝
+        
+        `,
+    "已上线",
+    dnum,
+    "天",
+    "©2023 By 安知鱼 V1.6.14",
+  ];
+  const ascll2 = [`NCC2-036`, `调用前置摄像头拍照成功，识别为【小笨蛋】.`, `Photo captured: `, `🤪`];
+
+  setTimeout(
+    Log.bind(
+      console,
+      `\n%c${ascll[0]} %c ${ascll[1]} %c ${ascll[2]} %c${ascll[3]}%c ${ascll[4]}%c ${ascll[5]}\n\n%c ${ascll[6]}\n`,
+      "color:#425AEF",
+      "",
+      "color:#425AEF",
+      "color:#425AEF",
+      "",
+      "color:#425AEF",
+      ""
+    )
+  );
+  setTimeout(
+    Log.bind(
+      console,
+      `%c ${ascll2[0]} %c ${ascll2[1]} %c \n${ascll2[2]} %c\n${ascll2[3]}\n`,
+      "color:white; background-color:#4fd953",
+      "",
+      "",
+      'background:url("https://npm.elemecdn.com/anzhiyu-blog@1.1.6/img/post/common/tinggge.gif") no-repeat;font-size:450%'
+    )
+  );
+
+  setTimeout(Log.bind(console, "%c WELCOME %c 你好，小笨蛋.", "color:white; background-color:#4f90d9", ""));
+
+  setTimeout(
+    console.warn.bind(
+      console,
+      "%c ⚡ Powered by 安知鱼 %c 你正在访问 LoungeXi 的博客.",
+      "color:white; background-color:#f0ad4e",
+      ""
+    )
+  );
+
+  setTimeout(Log.bind(console, "%c W23-12 %c 你已打开控制台.", "color:white; background-color:#4f90d9", ""));
+
+  setTimeout(
+    console.warn.bind(console, "%c S013-782 %c 你现在正处于监控中.", "color:white; background-color:#d9534f", "")
+  );
+});</script><script async src="/anzhiyu/random.js"></script><div class="js-pjax"><input type="hidden" name="page-type" id="page-type" value="post"></div><script async data-pjax src="https://cdn.cbd.int/anzhiyu-theme-static@1.0.0/waterfall/waterfall.js"></script><script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/qrcodejs/1.0.0/qrcode.min.js"></script><link rel="stylesheet" href="https://cdn.cbd.int/anzhiyu-theme-static@1.1.9/icon/ali_iconfont_css.css"><script src="https://cdn.cbd.int/pjax@0.2.8/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+  // removeEventListener scroll 
+  anzhiyu.removeGlobalFnEvent('pjax')
+  anzhiyu.removeGlobalFnEvent('themeChange')
+
+  document.getElementById('rightside').classList.remove('rightside-show')
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', e => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script charset="UTF-8" src="https://cdn.cbd.int/anzhiyu-theme-static@1.1.5/accesskey/accesskey.js"></script></div><div id="popup-window"><div class="popup-window-title">通知</div><div class="popup-window-divider"></div><div class="popup-window-content"><div class="popup-tip">你好呀</div><div class="popup-link"><i class="anzhiyufont anzhiyu-icon-arrow-circle-right"></i></div></div></div></body></html>
